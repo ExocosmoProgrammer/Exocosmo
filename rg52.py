@@ -1,56 +1,149 @@
 import pygame
 import random
-from pygame import mixer
 import json
+
 def play(song):
-    mixer.init()
-    mixer.music.load(song)
-    mixer.music.set_volume(2)
-    mixer.music.play(-1)
-file = 0
-sprites_for_inventory_items = {'basic range': pygame.image.load('images/pistol_in_inventory.png'),
-                                'basic spread': pygame.image.load('images/basic_spread_in_inventory.png'),
-                                'mandible': pygame.image.load('images/mandible_in_inventory.png'),
-                                'chunk of cactus': pygame.image.load('images/chunk_of_cactus.png'),
-                                'wobbegong cloak': pygame.image.load('images/wobbegong_cloak.png'),
-                                'bag of sand': pygame.image.load('images/bag_of_sand.png')}
-alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-font = {}
-for number in range(26):
-    font[alphabet[number]] = pygame.image.load(f'images/letter_{alphabet[number]}.png')
+    pygame.mixer.init()
+    pygame.mixer.music.load(song)
+    pygame.mixer.music.set_volume(2)
+    pygame.mixer.music.play(-1)
+
 def alphabetize_list(list):
-    alphabet_order = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11, 'l': 12, 'm': 13, 'n': 14, 'o': 15, 'p': 16, 'q': 17, 'r': 18, 's': 19, 't': 20, 'u': 21, 'v': 22, 'w': 23, 'x': 24, 'y': 25, 'z': 26}
-    dict = {}
-    alphabetized_list = []
-    for item in list:
-        dict[item] = 0
-        item = item.lower()
-        for number in range(len(item)):
-            try:
-                dict[item] += alphabet_order[item[number]] / 28 ** number
-            except KeyError:
-                dict[item] += 27 / 28 ** number
-    while len(list) > 0:
-        value_of_next_item_in_list = 999 ** 999
-        for item in list:
-            if dict[item] < value_of_next_item_in_list:
-                value_of_next_item_in_list = dict[item]
-                next_addition = item
-        for thing in list:
-            if next_addition == thing:
-                alphabetized_list.append(thing)
-                list.remove(thing)
-    return alphabetized_list
+    return sorted(list)
+
 def get_lesser(a, b):
-    if a < b:
-        return a
-    else:
-        return b
+    return a if a < b else b
+
 def return_unless_negative(number):
-    if number > 0:
-        return number
-    else:
-        return  0
+    return number if number > 0 else 0
+
+def negative_or_positive(num=1):
+    return -num if random.randint(0, 1) == 0 else num
+
+class Inventory_Box:
+    def __init__(self, centerx, centery, sprite=pygame.image.load('images/inventory_box.png')):
+        self.sprite = sprite
+        self.place = self.sprite.get_rect()
+        self.place.centerx = centerx
+        self.place.centery = centery
+
+class Bullet:
+    def __init__(self, hr, vr, damage, firer, melee=0, linger=400, sprite=None, piercing=0):
+        self.piercing = piercing
+        self.hurt_targets = []
+        self.damage = damage
+        self.linger = linger
+        self.melee = melee
+        self.firer = firer
+        self.hr = hr
+        self.vr = vr
+
+        # Set correct sprite based on firer
+        if firer == p:
+            if p.inventory[p.active_item].type == "mandible":
+                self.sprite = pygame.image.load('images/player_meele_w.png')
+            elif p.inventory[p.active_item].type == "basic range":
+                self.sprite = pygame.image.load('images/PP2.png')
+            elif p.inventory[p.active_item].type == "basic spread":
+                self.sprite = pygame.image.load('images/PP2.png')
+        else:
+            self.sprite = pygame.image.load('images/hp3.bmp')
+            if self.firer.type == "iron angel" or self.firer.type == "wobbegong":
+                self.sprite = pygame.image.load('images/IAP.png')
+            elif self.firer.type == "antlion":
+                if self.melee == 1:
+                    self.sprite = pygame.image.load('images/lionmeleea2.png')
+                else:
+                    self.sprite = pygame.image.load('images/player_meele_w.png')
+            elif self.firer == p and p.inventory[p.active_item].type == "mandible":
+                self.sprite = pygame.image.load('images/player_meele_w.png')
+
+        if not sprite == None:
+            self.sprite = sprite
+
+        # Gets the coordinates for usage later
+        self.place = self.sprite.get_rect()
+        self.place.centerx = self.firer.place.centerx
+        self.place.centery = self.firer.place.centery
+
+        # If firer is the player, add some offset to the bullet.
+        if self.firer == p and self.melee == 1:
+            a = self.place.height / 2 + 40
+            b = self.place.width / 2 + 15
+            disy = pygame.mouse.get_pos()[1] - p.place.centery
+            disx = pygame.mouse.get_pos()[0] - p.place.centerx
+
+            try:
+                disyoverdisx = disy / disx
+                self.shiftx = a * b * sign(disx) / sqrt(a ** 2 + disyoverdisx ** 2 * b ** 2)
+            except ZeroDivisionError:
+                self.shiftx = 0
+
+            try:
+                disxoverdisy = disx / disy
+                self.shifty = a * b * sign(disy) / sqrt(b ** 2 + disxoverdisy ** 2 * a ** 2)
+            except ZeroDivisionError:
+                self.shifty = 0
+
+            self.place.centerx = p.place.centerx + self.shiftx
+            self.place.centery = p.place.centery + self.shifty
+
+        self.center = [self.place.centerx, self.place.centery]
+
+    def move(self):
+        self.linger -= 1
+
+        if self.linger < 1:
+            try:
+                self.firer.bullets.remove(self)
+                if type(self.firer) == Foe:
+                    coordinate_to_room(p.room)[1].enemy_bullets.remove(self)
+            except ValueError:
+                pass
+
+        self.center[0] += self.hr
+        self.center[1] += self.vr
+
+        if self.melee == 1:
+            if self.firer.place.top <= 0 and self.firer.vr < 0:
+                pass
+            elif self.firer.place.bottom >= 900 and self.firer.vr > 0:
+                pass
+            else:
+                self.center[1] += self.firer.vr * self.firer.speed
+            if self.firer.place.left <= 0 and self.firer.hr < 0:
+                pass
+            elif self.firer.place.right >= 1600 and self.firer.hr > 0:
+                pass
+            else:
+                self.center[0] += self.firer.hr * self.firer.speed
+
+        self.place.centerx = self.center[0]
+        self.place.centery = self.center[1]
+        p.display.blit(self.sprite, self.place)
+        try:
+            if self.place.top < 0 or self.place.left < 0 or self.place.bottom > 900 or self.place.right > 1600:
+                if self.melee == 0 and not self.firer == p:
+                    self.firer.bullets.remove(self)
+        except ValueError:
+            pass
+
+play('music/Desert calm.mp3')
+
+file = 0
+sprites_for_inventory_items = {
+    'basic range'     : pygame.image.load('images/pistol_in_inventory.png'),
+    'basic spread'    : pygame.image.load('images/basic_spread_in_inventory.png'),
+    'mandible'        : pygame.image.load('images/mandible_in_inventory.png'),
+    'chunk of cactus' : pygame.image.load('images/chunk_of_cactus.png'),
+    'wobbegong cloak' : pygame.image.load('images/wobbegong_cloak.png'),
+    'bag of sand'     : pygame.image.load('images/bag_of_sand.png')
+}
+
+font = {}
+for i in "abcdefghijklmnopqrstuvwxyz":
+    font[i] = pygame.image.load(f'images/letter_{i}.png')
+
 deleted_save_text = input("Type bwhufkwevfguavesfytidsgvweyih wvetfyuh igweqyf 34qerjf breufveuywfeb wejfyuvwe k.f bwe hukaymjbui34wketf e8.ofhgq4yurf3 we,h and then a number to delete the save of the cooresponding number.:").lower()
 for number in range(4):
     if f'bwhufkwevfguavesfytidsgvweyih wvetfyuh igweqyf 34qerjf breufveuywfeb wejfyuvwe k.f bwe hukaymjbui34wketf e8.ofhgq4yurf3 we,h{number + 1}' == deleted_save_text:
@@ -71,104 +164,6 @@ while not file == 1 and not file == 2 and not file == 3 and not file == 4:
         file = int(input('Choose a file:'))
     except ValueError:
         print("That was improper.")
-def negative_or_positive(num):
-    number = 0
-    while number == 0:
-        number = random.randint(-1, 1) * num
-    return number
-class Inventory_Box:
-    def __init__(self, centerx, centery, sprite=pygame.image.load('images/inventory_box.png')):
-        self.sprite = sprite
-        self.place = self.sprite.get_rect()
-        self.place.centerx = centerx
-        self.place.centery = centery
-class Bullet:
-    def __init__(self, hr, vr, damage, firer, meelee = 0, linger = 400, sprite = None, piercing = 0):
-        self.damage = damage
-        self.linger = linger
-        self.hr = hr
-        self.meelee = meelee
-        self.piercing = piercing
-        self.vr = vr
-        self.hurt_targets = []
-        self.firer = firer
-        if firer == p:
-            if p.inventory[p.active_item].type == "mandible":
-                self.sprite = pygame.image.load('images/player_meele_w.png')
-            if p.inventory[p.active_item].type == "basic range":
-                self.sprite = pygame.image.load('images/PP2.png')
-            if p.inventory[p.active_item].type == "basic spread":
-                self.sprite = pygame.image.load('images/PP2.png')
-        else:
-            self.sprite = pygame.image.load('images/hp3.bmp')
-            if self.firer.type == "iron angel" or self.firer.type == "wobbegong":
-                self.sprite = pygame.image.load('images/IAP.png')
-            if self.firer.type == "antlion":
-                if self.meelee == 1:
-                    self.sprite = pygame.image.load('images/lionmeeleea2.png')
-                else:
-                    self.sprite = pygame.image.load('images/player_meele_w.png')
-            if self.firer == p and p.inventory[p.active_item].type == "mandible":
-                self.sprite = pygame.image.load('images/player_meele_w.png')
-        if not sprite == None:
-            self.sprite = sprite
-        self.place = self.sprite.get_rect()
-        self.place.centery = self.firer.place.centery
-        self.place.centerx = self.firer.place.centerx
-        if self.firer == p and self.meelee == 1:
-            a = self.place.height / 2 + 40
-            b = self.place.width / 2 + 15
-            disx = pygame.mouse.get_pos()[0] - p.place.centerx
-            disy = pygame.mouse.get_pos()[1] - p.place.centery
-            try:
-                disyoverdisx = disy / disx
-                self.shiftx = a * b * sign(disx) / sqrt(a ** 2 + disyoverdisx ** 2 * b ** 2)
-            except ZeroDivisionError:
-                self.shiftx = 0
-            try:
-                disxoverdisy = disx / disy
-                self.shifty = a * b * sign(disy) / sqrt(b ** 2 + disxoverdisy ** 2 * a ** 2)
-            except ZeroDivisionError:
-                self.shifty = 0
-            self.place.centery = p.place.centery + self.shifty
-            self.place.centerx = p.place.centerx + self.shiftx
-        self.center = [self.place.centerx, self.place.centery]
-    def move(self):
-        self.linger -= 1
-        if self.linger < 1:
-            try:
-                if self.firer == p:
-                    for foe in coordinate_to_room(p.room)[1].foes:
-                        foe.can_be_hurt_by_player_meelee = 1
-                self.firer.bullets.remove(self)
-                if type(self.firer) == Foe:
-                    coordinate_to_room(p.room)[1].enemy_bullets.remove(self)
-            except ValueError:
-                pass
-        self.center[0] += self.hr
-        self.center[1] += self.vr
-        if self.meelee == 1:
-            if self.firer.place.top <= 0 and self.firer.vr < 0:
-                pass
-            elif self.firer.place.bottom >= 900 and self.firer.vr > 0:
-                pass
-            else:
-                self.center[1] += self.firer.vr * self.firer.speed
-            if self.firer.place.left <= 0 and self.firer.hr < 0:
-                pass
-            elif self.firer.place.right >= 1600 and self.firer.hr > 0:
-                pass
-            else:
-                self.center[0] += self.firer.hr * self.firer.speed
-        self.place.centerx = self.center[0]
-        self.place.centery = self.center[1]
-        p.display.blit(self.sprite, self.place)
-        try:
-            if self.place.top < 0 or self.place.left < 0 or self.place.bottom > 900 or self.place.right > 1600:
-                if self.meelee == 0 and not self.firer == p:
-                    self.firer.bullets.remove(self)
-        except ValueError:
-            pass
 class Item:
     def __init__(self, drop_chance, type, qty = 1, max_stack_size = 1):
         self.drop_chance = drop_chance
@@ -726,7 +721,7 @@ class Player:
                 self.place.centerx = self.center[0]
                 self.place.centery = self.center[1]
         for projectile in self.bullets:
-            if projectile.meelee == 1:
+            if projectile.melee == 1:
                 projectile.place.x += self.hr * self.speed
                 projectile.place.y += self.vr * self.speed
         if self.center[1] - self.place.height / 2 < 0:
@@ -816,7 +811,7 @@ class Player:
         for number in range(10):
             self.fire_semirandomly_not_as_entire_attack(0.06, linger=20, piercing=100)
     def swing_as_part_of_mandible_attack(self):
-        self.bullets.append(Bullet(0, 0, 8, self, meelee=1, linger=20, sprite=pygame.image.load('images/lionmeeleea2.png')))
+        self.bullets.append(Bullet(0, 0, 8, self, melee=1, linger=20, sprite=pygame.image.load('images/lionmeleea2.png')))
     def fire_as_part_of_mandible_attack(self):
         player_pos = [self.place.centerx, self.place.centery]
         mouse_pos = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
@@ -832,16 +827,16 @@ class Player:
             self.hr_while_dashing = 35 * path_without_automatic_place_attribute(self.center, pygame.mouse.get_pos())[0]
             self.vr_while_dashing = 35 * path_without_automatic_place_attribute(self.center, pygame.mouse.get_pos())[1]
             self.stamina = 315
-            for meelee_attack in self.bullets:
-                if meelee_attack.meelee == 1:
-                    self.bullets.remove(meelee_attack)
+            for melee_attack in self.bullets:
+                if melee_attack.melee == 1:
+                    self.bullets.remove(melee_attack)
     def slide(self):
         if self.stamina < 216 and self.dash_frames_remaining < 1 and self.slide_frames_remaining < 1:
             self.slide_frames_remaining = 15
             self.stamina += 100
-            for meelee_attack in self.bullets:
-                if meelee_attack.meelee == 1:
-                    self.bullets.remove(meelee_attack)
+            for melee_attack in self.bullets:
+                if melee_attack.melee == 1:
+                    self.bullets.remove(melee_attack)
 class Mouse_Marker_Target:
     def __init__(self):
         self.sprite = pygame.image.load('images/mouse_marker_target.png')
@@ -870,7 +865,7 @@ class Foe:
         self.target = p
         self.fire_cooldown = 0
         self.bullets = []
-        self.can_be_hurt_by_player_meelee = 1
+
         if self.type == "antlion":
             self.antlion_pause = random.randint(15, 70)
             self.hp = 100
@@ -1023,7 +1018,7 @@ class Foe:
             self.place = self.sprite.get_rect()
             self.place.centerx = consistent_place[0]
             self.place.centery = consistent_place[1]
-            self.bullets.append(Bullet(0, 0, 40, self, meelee=1, linger = 65))
+            self.bullets.append(Bullet(0, 0, 40, self, melee=1, linger = 65))
             for number in range(2):
                 self.bullets.append(Bullet(semirandom_path(self, p)[0], semirandom_path(self, p)[1], 40, self, linger=150))
             self.antlion_pause = 70
@@ -1159,7 +1154,7 @@ class Room:
                 if not bullet in self.enemy_bullets:
                     self.enemy_bullets.append(bullet)
         for range_attack in self.enemy_bullets:
-            if range_attack.meelee == 1 and not range_attack.firer in self.foes:
+            if range_attack.melee == 1 and not range_attack.firer in self.foes:
                 self.enemy_bullets.remove(range_attack)
     def spawn_foes_in_room(self):
         if not self.coordinate == [0, 0, 0]:
@@ -1191,11 +1186,11 @@ class Rooms:
             if random.randint(1, 2) == 1:
                 while room in self.room_coordinates.copy():
                     adjacent_room = [self.room_coordinates[random.randint(0, len(self.rooms) - 1)][0], self.room_coordinates[random.randint(0, len(self.rooms) - 1)][1], depth]
-                    room = [adjacent_room[0] + negative_or_positive(1), adjacent_room[1], depth]
+                    room = [adjacent_room[0] + negative_or_positive(), adjacent_room[1], depth]
             else:
                 while room in self.room_coordinates.copy():
                     adjacent_room = [self.room_coordinates[random.randint(0, len(self.rooms) - 1)][0], self.room_coordinates[random.randint(0, len(self.rooms) - 1)][1], depth]
-                    room = [adjacent_room[0], adjacent_room[1] + negative_or_positive(1), depth]
+                    room = [adjacent_room[0], adjacent_room[1] + negative_or_positive(), depth]
             self.rooms.append(Room(room, biome))
             self.room_coordinates.append(room)
     def coordinate_to_room(self):
@@ -1322,7 +1317,7 @@ def coordinate_to_room(coordinate):
 def check_collision(a, b):
     if abs(a.place.centerx - b.place.centerx) < (a.place.width + b.place.width) / 2 and abs(a.place.centery - b.place.centery) < (a.place.height + b.place.height) / 2:
         if type(a) == Bullet:
-            if a.meelee == 0 and not b in a.hurt_targets:
+            if a.melee == 0 and not b in a.hurt_targets:
                 try:
                     a.piercing -= 1
                     if a.piercing < 0:
@@ -1341,7 +1336,7 @@ def check_collision(a, b):
                             b.hp -= a.damage
                         return 1
                     if not type(b) == Player:
-                        if a.meelee == 1:
+                        if a.melee == 1:
                             if not b in a.hurt_targets:
                                 b.hp -= a.damage
                                 return 1
