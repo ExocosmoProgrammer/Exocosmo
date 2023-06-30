@@ -1,8 +1,12 @@
 import pygame
 import random
+from pygame import mixer
 import json
-from filler import play
-play('music/Desert calm.mp3')
+def play(song):
+    mixer.init()
+    mixer.music.load(song)
+    mixer.music.set_volume(2)
+    mixer.music.play(-1)
 file = 0
 sprites_for_inventory_items = {'basic range': pygame.image.load('images/pistol_in_inventory.png'),
                                 'basic spread': pygame.image.load('images/basic_spread_in_inventory.png'),
