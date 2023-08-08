@@ -11,13 +11,13 @@ def sqrt(a):
     return a ** .5
 # Import images
 IMAGES = {}
-for i in os.listdir("images"):
+for i in os.listdir("newImages"):
     if i not in ["font"]:
-        IMAGES[f"images/{i}"] = pygame.image.load(f'images/{i}')
+        IMAGES[f"images/{i}"] = pygame.image.load(f'newImages/{i}')
 
 FONT = {}
-for i in os.listdir("images/font"):
-    FONT[i[-5].lower()] = pygame.image.load(f'images/font/{i}')
+for i in os.listdir("newImages/font"):
+    FONT[i[-5].lower()] = pygame.image.load(f'newImages/font/{i}')
 def getDirection(x, y):
     if abs(x) > abs(y):
         return 'd' if x > 0 else 'a'
