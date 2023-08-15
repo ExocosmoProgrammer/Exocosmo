@@ -47,6 +47,7 @@ class rectangle:
         self.updatePoints()
     def rotate(self, angle):
         self.center = [(self.left + self.right) / 2, (self.top + self.bottom) / 2]
+        self.angle += angle
         for point in self.points:
             point[0] = self.center[0] + math.cos(getRadAngle(self.center[0] - point[0], self.center[1] - point[1]) + math.pi + angle) * dis(point, self.center)
             point[1] = self.center[1] + math.sin(getRadAngle(self.center[0] - point[0], self.center[1] - point[1]) + math.pi + angle) * dis(point, self.center)
